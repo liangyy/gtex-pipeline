@@ -2,6 +2,8 @@
 
 library(peer, quietly=TRUE)  # https://github.com/PMBio/peer
 library(argparser, quietly=TRUE)
+library(data.table)
+options(datatable.fread.datatable = F)
 
 WriteTable <- function(data, filename, index.name) {
     datafile <- file(filename, open = "wt")
@@ -34,7 +36,11 @@ if (grepl('.bed$', argv$expr.file) || grepl('.bed.gz$', argv$expr.file)) {
     df <- read.table(argv$expr.file, sep="\t", nrows=nrows, header=TRUE, check.names=FALSE, comment.char="")
     row.names(df) <- df[, 4]
     df <- df[, 5:ncol(df)]
-} else {
+} else if (grepl('.rds$', args$expr.file)) {
+    df <- readRDS(args$expr.file)
+    df <- df$df_trc
+    df <- log(df / 2)
+}else {
     df <- read.table(argv$expr.file, sep="\t", nrows=nrows, header=TRUE, check.names=FALSE, comment.char="", row.names=1)
 }
 M <- t(as.matrix(df))
